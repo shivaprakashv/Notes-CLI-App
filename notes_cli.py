@@ -21,7 +21,16 @@ def list_notes(label="all"):
         print(f"{n['created'][:10]} [{n['label']}] {n['text']}")
 
 def add_note(text, label):
+    #how to prevent duplicates in getting added
     notes = load_notes()
+    for n in notes:
+        if n["text"] == text and n["label"] == label:
+            #update print statement based on modified logic
+            print("Duplicate note found. Updating timestamp.")
+            #if duplicate found, update the timestamp
+            n["created"] = datetime.datetime.utcnow().isoformat()
+            save_notes(notes)
+            return
     notes.append(
         {
             "text": text,
@@ -30,6 +39,7 @@ def add_note(text, label):
         }
     )
     save_notes(notes)
+    print(notes)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -37,6 +47,8 @@ def main():
 
     list_cmd = sub.add_parser("list")
     # --label will be added by learner
+    list_cmd.add_argument("--label", choices=["all", "work", "personal"], default="all")
+
 
     add_cmd = sub.add_parser("add")
     add_cmd.add_argument("note")
@@ -46,7 +58,7 @@ def main():
 
     if args.command == "list":
         # Learner will extend here
-        list_notes()
+        list_notes(args.label)
     elif args.command == "add":
         add_note(args.note, args.label)
     else:
